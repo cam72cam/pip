@@ -176,7 +176,7 @@ def install_req_from_editable(
 
 def install_req_from_line(
     name, comes_from=None, isolated=False, options=None, wheel_cache=None,
-    constraint=False
+    constraint=False, package_name=None,
 ):
     """Creates an InstallRequirement from a name, which might be a
     requirement, directory containing 'setup.py', filename, or URL.
@@ -263,6 +263,8 @@ def install_req_from_line(
                 "Invalid requirement: '%s'\n%s" % (req, add_msg)
             )
 
+    assert package_name is None or req.name == package_name
+
     return InstallRequirement(
         req, comes_from, link=link, markers=markers,
         isolated=isolated,
@@ -292,6 +294,11 @@ def install_req_from_req(
             "which are not also hosted on PyPI.\n"
             "%s depends on %s " % (comes_from.name, req)
         )
+    if req.url:
+        return install_req_from_line(req.url, comes_from=comes_from,
+                                     isolated=isolated,
+                                     wheel_cache=wheel_cache,
+                                     package_name=req.name)
 
     return InstallRequirement(
         req, comes_from, isolated=isolated, wheel_cache=wheel_cache
